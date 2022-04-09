@@ -1,0 +1,8 @@
+name: fastai
+channels:
+  - conda-forge
+dependencies:
+  # ----PYTHON-------
+  - python=3.8
+  - pip
+  - black

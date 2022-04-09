@@ -1,0 +1,12 @@
+{
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "./cli.py",
+            "console": "integratedTerminal",
+            "cwd":"${workspaceFolder}/src"
+        }
+    ]
+}
