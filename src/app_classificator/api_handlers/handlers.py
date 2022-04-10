@@ -5,9 +5,15 @@ from sanic.response import json as sanic_json
 from sanic.log import logger
 from random import random
 from pathlib import Path
+import psycopg2
 
 from app_classificator.config import settings
 
+connection = psycopg2.connect(user="dusko",
+                                password="Test1234",
+                                host="postgres-hackuj-brno.postgres.database.azure.com",
+                                port="5432",
+                                database="postgres")
 
 api_v1 = Blueprint("api_v1", url_prefix="/api/v1")
 
@@ -37,3 +43,17 @@ async def classify(request):
         }
     
     return sanic_json(clas_out)
+
+@api_v1.route("/trash_cans")
+def trash_cans(request):
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM trashcan_points")
+    trash_bins = cursor.fetchall()
+    output = []
+    
+    for i in range(len(trash_bins)):
+        lon, lat, is_full, _, _, photo_url = trash_bins[i]
+        output.append({"long":lon, "lat":lat, "is_full":is_full == 1, "photo_url": photo_url})
+    
+    
+    return sanic_json(output)
