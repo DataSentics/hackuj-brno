@@ -1,52 +1,39 @@
 #!/usr/bin/env python
+import uuid
 from sanic import Blueprint
-from sanic.response import json, file
+from sanic.response import json as sanic_json
 from sanic.log import logger
 from random import random
 from pathlib import Path
 
-from fastbook import *
-from fastai.vision.widgets import *
-
 from app_classificator.config import settings
-from app_classificator.model.classificator import classificator
-# parameters
-batch_size = 128
-epoch_num = 20
-arch = resnet34  # resnet18, resnet34, resnet50, resnet101, ...
-valid_pct = 0.2
-crop_size = 224
-lr = 1e-3
 
-# augmentations
-tfms_do_flip = True
-tfms_flip_vert = True
-tfms_max_rotate = 50 
-tfms_max_zoom = 1.1
-tfms_max_warp = 0.2
-tfms_max_lighting = 0.5 # max brightness
-tfms_p_affine = 0.75 # no random rotation
 
 api_v1 = Blueprint("api_v1", url_prefix="/api/v1")
 
 # FIXME: Development version. Not real usecase.
 @api_v1.route("/classify")
-async def root(request):
-    image_data = request.files.get("image")
-    image_path = Path(f"./images/{random()}")
+async def classify(request):
+    from app_classificator.model.classificator import classificator
+    document_id = uuid.uuid4()
+    image_request = request.files.get("image")
+    image_data = image_request.body
+    image_name = image_request.name
+    image_path = Path(f"./images/{document_id}/{image_name}")
     
-    image_path.mkdir(parents=True, exist_ok=True)
-
-    with image_path.open("w", encoding ="utf-8") as f:
-        f.write(image_data)
+    image_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    with open(str(image_path), "wb") as imf:
+        imf.write(image_data)
     
     # load the model
     logger.info(f"working on model {image_path=}")
     # return the inferenced value
-    calssification = classificator.predict(image_path, CPU=settings.USE_CPU)
+    clas_result = classificator.predict(str(image_path))
+    clas_out = {
+            "empty": 1 if not clas_result[0]=="empty" else 0,
+            "is_empty_prob": float(clas_result[2][0]),
+            "is_full_prob": float(clas_result[2][1]),
+        }
     
-    return json({
-            "empty": 1 if not calssification[0]=="empty" else 0,
-            "is_empty_prob": float(calssification[2][0]),
-            "is_full_prob": float(calssification[2][1])
-        })
+    return sanic_json(clas_out)

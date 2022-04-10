@@ -11,8 +11,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 RUN cp /usr/share/zoneinfo/Europe/Prague /etc/localtime
 
-#COPY /etc/model/ /app/model
-COPY src/app_web /app/app_web
+COPY src/models /app/models
+COPY src/app_classificator /app/app_classificator
 COPY src/fastai_classificator /app/fastai_classificator
 COPY src/cli.py /app/cli.py
 

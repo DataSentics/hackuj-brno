@@ -12,7 +12,7 @@ IMAGE_NAME := fastai
 DEV_IMAGE_NAME := $(IMAGE_NAME)-dev
 CONDA_ENV_NAME := fastai
 REGISTRY := localhost:32000
-REGISTRY_REMOTE := cuckara
+REGISTRY_REMOTE := cuckara.azurecr.io
 
 SHELL=/bin/bash
 CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
@@ -41,7 +41,7 @@ docker-push: docker-build
 	@docker push $(REGISTRY)/$(IMAGE_NAME)
 
 docker-push-remote: docker-build
-	@docker tag $(IMAGE_NAME) $(REGISTRY)/$(IMAGE_NAME)
+	@docker tag $(IMAGE_NAME) $(REGISTRY_REMOTE)/$(IMAGE_NAME)
 	@docker push $(REGISTRY_REMOTE)/$(IMAGE_NAME)
 
 RENAME ?= changed_name_repo
